@@ -58,7 +58,7 @@ Example:
 
 ```
 cargo new --bin tools/host-tool
-cargo new --bin tools/host-lib
+cargo new --lib tools/host-lib
 ```
 
 If it is to be used as a top-level tool, like `xtask`, add an alias for it in
