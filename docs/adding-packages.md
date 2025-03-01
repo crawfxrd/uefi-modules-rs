@@ -22,9 +22,6 @@ targets.
 Example:
 
 ```rust
-// SPDX-License-Identifier: GPL-3.0-only
-// SPDX-FileCopyrightText: 2024 System76, Inc.
-
 use std::env;
 
 fn main() {
@@ -42,9 +39,6 @@ Add a `module.inf` if the package is to be integrated into an edk2 build.
 Example:
 
 ```ini
-# SPDX-License-Identifier: GPL-3.0-only
-# SPDX-FileCopyrightText: 2024 System76, Inc.
-
 [Defines]
   INF_VERSION                    = 1.27
   BASE_NAME                      = example-driver
