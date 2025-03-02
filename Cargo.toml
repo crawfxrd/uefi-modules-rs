@@ -4,6 +4,7 @@
 [workspace]
 resolver = "2"
 members = [
+    "tools/build-cfg",
     "tools/xtask",
     "uefi/system76-firmware-setup",
     "uefi/system76-firmware-update",
@@ -14,8 +15,11 @@ members = [
 edition = "2024"
 license = "GPL-3.0-only"
 publish = false
+rust-version = "1.85.0"
 
 [workspace.dependencies]
+build-cfg = { path = "tools/build-cfg" }
+# External crates
 redox_uefi_std = "0.1.13"
 
 [profile.dev]
@@ -29,3 +33,6 @@ opt-level = 3
 panic = "abort"
 split-debuginfo = "packed"
 #trim-paths = "all" # https://rust-lang.github.io/rfcs/3127-trim-paths.html
+
+[workspace.lints.rust]
+unsafe_op_in_unsafe_fn = "deny"

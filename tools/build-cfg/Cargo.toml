@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: MPL-2.0
+# SPDX-FileCopyrightText: 2025 System76, Inc.
+
+[package]
+name = "build-cfg"
+description = "Configure UEFI modules from Cargo build scripts"
+version = "0.0.0"
+license = "MPL-2.0"
+edition.workspace = true
+publish.workspace = true
+rust-version.workspace = true
+
+[lib]
+test = false
+
+[dependencies]
+
+[lints]
+workspace = true

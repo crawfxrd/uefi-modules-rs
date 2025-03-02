@@ -13,22 +13,22 @@ cargo new --lib uefi/example-lib
 
 ### Package build script
 
-`*-unknown-uefi` by default creates UEFI applications. For drivers, the
-subsystem type must be set by a linker argument.
-
-Create a `build.rs` file in the package root that sets `/subsystem` for UEFI
-targets.
+The `build-cfg` library is used to set link args for UEFI modules based on
+their edk2 module type. Add it as a dependency, and call `configure()` from
+the package build script.
 
 Example:
 
-```rust
-use std::env;
+```toml
+# Cargo.toml
+[build-dependencies]
+build-cfg.workspace = true
+```
 
+```rust
+// build.rs
 fn main() {
-    let target = env::var("TARGET").unwrap();
-    if target.ends_with("-unknown-uefi") {
-        println!("cargo::rustc-link-arg=/subsystem:efi_boot_service_driver");
-    }
+    build_cfg::configure(build_cfg::ModuleType::UefiDriver);
 }
 ```
 

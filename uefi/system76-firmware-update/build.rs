@@ -9,4 +9,6 @@ fn main() {
     if env::var("BASEDIR").is_err() {
         println!("cargo::rustc-env=BASEDIR=system76-firmware-update");
     }
+
+    build_cfg::configure(build_cfg::ModuleType::UefiApplication);
 }
