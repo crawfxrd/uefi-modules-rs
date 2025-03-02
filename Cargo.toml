@@ -46,3 +46,8 @@ split-debuginfo = "packed"
 
 [workspace.lints.rust]
 unsafe_op_in_unsafe_fn = "deny"
+
+[workspace.lints.clippy]
+borrow_as_ptr = "warn"
+cast_lossless = "warn"
+ptr_as_ptr = "warn"

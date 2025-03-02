@@ -14,13 +14,13 @@ pub fn parse(file_data: &[u8]) -> core::result::Result<Image, String> {
         }
     };
 
-    let getw = |i: usize| -> u16 { (get(i) as u16) + ((get(i + 1) as u16) << 8) };
+    let getw = |i: usize| -> u16 { u16::from(get(i)) + (u16::from(get(i + 1)) << 8) };
 
     let getd = |i: usize| -> u32 {
-        (get(i) as u32)
-            + ((get(i + 1) as u32) << 8)
-            + ((get(i + 2) as u32) << 16)
-            + ((get(i + 3) as u32) << 24)
+        u32::from(get(i))
+            + (u32::from(get(i + 1)) << 8)
+            + (u32::from(get(i + 2)) << 16)
+            + (u32::from(get(i + 3)) << 24)
     };
 
     let gets = |start: usize, len: usize| -> String {
@@ -35,7 +35,7 @@ pub fn parse(file_data: &[u8]) -> core::result::Result<Image, String> {
         // let header_size = getd(0xE);
         let width = getd(0x12);
         let height = getd(0x16);
-        let depth = getw(0x1C) as u32;
+        let depth = u32::from(getw(0x1C));
 
         let bytes = (depth + 7) / 8;
         let row_bytes = (depth * width + 31) / 32 * 4;

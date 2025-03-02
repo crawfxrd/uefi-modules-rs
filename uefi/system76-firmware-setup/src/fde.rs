@@ -44,7 +44,7 @@ impl HiiStringProtocol {
         let mut len = data.len();
         Result::from((self.GetString)(
             self,
-            c"en-US".as_ptr() as *const u8,
+            c"en-US".as_ptr().cast::<u8>(),
             PackageList,
             StringId,
             data.as_mut_ptr(),
@@ -58,7 +58,7 @@ impl HiiStringProtocol {
             if w == 0 {
                 break;
             }
-            let c = unsafe { char::from_u32_unchecked(w as u32) };
+            let c = unsafe { char::from_u32_unchecked(u32::from(w)) };
             string.push(c);
         }
         Ok(string)
@@ -457,7 +457,7 @@ fn form_display_inner(form: &Form, user_input: &mut UserInput) -> Result<()> {
                                                 let mut x_copy = $x;
                                                 unsafe {
                                                     ptr::copy(
-                                                        buffer.as_ptr().add(offset) as *const _,
+                                                        buffer.as_ptr().add(offset).cast(),
                                                         &mut x_copy,
                                                         1,
                                                     );
@@ -867,8 +867,10 @@ fn form_display_inner(form: &Form, user_input: &mut UserInput) -> Result<()> {
                                                             unsafe {
                                                                 ptr::copy(
                                                                     &$x,
-                                                                    buffer.as_mut_ptr().add(offset)
-                                                                        as *mut _,
+                                                                    buffer
+                                                                        .as_mut_ptr()
+                                                                        .add(offset)
+                                                                        .cast(),
                                                                     1,
                                                                 )
                                                             }

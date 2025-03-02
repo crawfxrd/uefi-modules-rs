@@ -21,5 +21,5 @@ pub fn wait_key() -> Result<char> {
 
     Result::from((uefi.ConsoleIn.ReadKeyStroke)(uefi.ConsoleIn, &mut input))?;
 
-    Ok(unsafe { char::from_u32_unchecked(input.UnicodeChar as u32) })
+    Ok(unsafe { char::from_u32_unchecked(u32::from(input.UnicodeChar)) })
 }

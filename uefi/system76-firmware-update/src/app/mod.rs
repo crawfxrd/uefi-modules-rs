@@ -265,7 +265,7 @@ fn inner() -> Result<()> {
         } else {
             println!("Press enter to commence flashing, the system may reboot...");
             let k = raw_key()?;
-            unsafe { char::from_u32_unchecked(k.UnicodeChar as u32) }
+            unsafe { char::from_u32_unchecked(u32::from(k.UnicodeChar)) }
         };
 
         if c == '\n' || c == '\r' {

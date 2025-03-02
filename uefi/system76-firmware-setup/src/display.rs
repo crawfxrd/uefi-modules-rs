@@ -43,7 +43,7 @@ impl Display {
     pub fn blit(&mut self, x: i32, y: i32, w: u32, h: u32) -> bool {
         let status = (self.output.0.Blt)(
             self.output.0,
-            self.data.as_mut_ptr() as *mut GraphicsBltPixel,
+            self.data.as_mut_ptr().cast::<GraphicsBltPixel>(),
             GraphicsBltOp::BufferToVideo,
             x as usize,
             y as usize,

@@ -43,7 +43,7 @@ impl Display {
     pub fn blit(&mut self, x: i32, y: i32, w: u32, h: u32) -> bool {
         let status = (self.output.0.Blt)(
             self.output.0,
-            self.data.as_mut_ptr() as *mut GraphicsBltPixel,
+            self.data.as_mut_ptr().cast::<GraphicsBltPixel>(),
             GraphicsBltOp::BufferToVideo,
             x as usize,
             y as usize,
@@ -65,12 +65,12 @@ impl Display {
             // Size of region to copy / Offset of region to clear
             let off2 = height * width - off1;
             unsafe {
-                let data_ptr = self.data.as_mut_ptr() as *mut u32;
+                let data_ptr = self.data.as_mut_ptr().cast::<u32>();
 
                 // Move data up
                 core::ptr::copy(
-                    data_ptr.add(off1) as *const u8,
-                    data_ptr as *mut u8,
+                    data_ptr.add(off1).cast::<u8>(),
+                    data_ptr.cast::<u8>(),
                     off2 * 4,
                 );
 

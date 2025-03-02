@@ -148,12 +148,12 @@ impl<'a> TextDisplay<'a> {
             let len = (self.rows - 1) * 16 * w as usize;
             unsafe {
                 let scale = self.display.scale() as isize;
-                let data_ptr = self.display.data_mut().as_mut_ptr() as *mut u32;
+                let data_ptr = self.display.data_mut().as_mut_ptr().cast::<u32>();
 
                 // Move data up
                 core::ptr::copy(
-                    data_ptr.offset(src as isize * scale * scale) as *const u8,
-                    data_ptr.offset(dst as isize * scale * scale) as *mut u8,
+                    data_ptr.offset(src as isize * scale * scale).cast::<u8>(),
+                    data_ptr.offset(dst as isize * scale * scale).cast::<u8>(),
                     len * (scale * scale) as usize * 4,
                 );
             }
@@ -188,7 +188,7 @@ impl<'a> TextDisplay<'a> {
                 break;
             }
 
-            let c = unsafe { char::from_u32_unchecked(w as u32) };
+            let c = unsafe { char::from_u32_unchecked(u32::from(w)) };
 
             if self.mode.CursorColumn as usize >= self.cols {
                 self.mode.CursorColumn = 0;

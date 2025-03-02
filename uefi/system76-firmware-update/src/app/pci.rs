@@ -46,14 +46,14 @@ unsafe fn rsdp_mcfg(rsdp: &Rsdp) -> Option<&'static [u8]> {
                 (rsdt.length as usize).checked_sub(mem::size_of::<SdtHeader>())
             {
                 let entries = slice::from_raw_parts(
-                    (rsdt as *const SdtHeader).offset(1) as *const u32,
+                    (rsdt as *const SdtHeader).offset(1).cast::<u32>(),
                     rsdt_data_len / mem::size_of::<u32>(),
                 );
                 for &entry in entries {
                     let sdt = &*(entry as *const SdtHeader);
                     if sdt.signature == *b"MCFG" {
                         return Some(slice::from_raw_parts(
-                            sdt as *const SdtHeader as *const u8,
+                            (sdt as *const SdtHeader).cast::<u8>(),
                             sdt.length as usize,
                         ));
                     }
@@ -67,14 +67,14 @@ unsafe fn rsdp_mcfg(rsdp: &Rsdp) -> Option<&'static [u8]> {
                 (xsdt.length as usize).checked_sub(mem::size_of::<SdtHeader>())
             {
                 let entries = slice::from_raw_parts(
-                    (xsdt as *const SdtHeader).offset(1) as *const u64,
+                    (xsdt as *const SdtHeader).offset(1).cast::<u64>(),
                     rsdt_data_len / mem::size_of::<u64>(),
                 );
                 for &entry in entries {
                     let sdt = &*(entry as *const SdtHeader);
                     if sdt.signature == *b"MCFG" {
                         return Some(slice::from_raw_parts(
-                            sdt as *const SdtHeader as *const u8,
+                            (sdt as *const SdtHeader).cast::<u8>(),
                             sdt.length as usize,
                         ));
                     }

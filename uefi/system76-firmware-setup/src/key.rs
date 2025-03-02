@@ -40,7 +40,7 @@ pub enum Key {
 impl From<TextInputKey> for Key {
     fn from(raw_key: TextInputKey) -> Self {
         match raw_key.ScanCode {
-            0 => match unsafe { char::from_u32_unchecked(raw_key.UnicodeChar as u32) } {
+            0 => match unsafe { char::from_u32_unchecked(u32::from(raw_key.UnicodeChar)) } {
                 '\u{8}' => Key::Backspace,
                 '\t' => Key::Tab,
                 '\r' => Key::Enter,
