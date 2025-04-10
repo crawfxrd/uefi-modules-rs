@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// SPDX-FileCopyrightText: 2025 System76, Inc.
+
 use core::cell::Cell;
 use core::cmp;
 use core::ptr;
