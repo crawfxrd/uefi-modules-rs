@@ -49,10 +49,7 @@ impl Timeout for UefiTimeout {
 
 pub enum EcKind {
     Pang(ectool::Pmc<UefiTimeout>, String),
-    System76(
-        ectool::Ec<AccessLpcDirect<UefiTimeout>>,
-        ectool::Pmc<UefiTimeout>,
-    ),
+    System76(ectool::Ec<AccessLpcDirect<UefiTimeout>>, ectool::Pmc<UefiTimeout>),
     Legacy(EcFlash),
     Unknown,
 }
@@ -442,7 +439,11 @@ impl<T: Timeout> SpiLegacy<T> {
                 if addr % self.page_size() == 0 {
                     print!("\r{}%", (addr * 100) / (blocks * block_size));
                 }
-                let byte = if addr < data.len() { data[addr] } else { 0xFF };
+                let byte = if addr < data.len() {
+                    data[addr]
+                } else {
+                    0xFF
+                };
                 unsafe { self.pmc_write(byte)? };
             }
         }
@@ -479,10 +480,7 @@ unsafe fn flash_legacy(firmware_data: &[u8]) -> core::result::Result<(), ectool:
     unsafe { spi.read(&mut erased)? };
     for (addr, byte) in erased.iter().enumerate() {
         if *byte != 0xFF {
-            println!(
-                "Failed to erase ROM: {:04X} is {:02X} not {:02X}",
-                addr, byte, 0xFF,
-            );
+            println!("Failed to erase ROM: {:04X} is {:02X} not {:02X}", addr, byte, 0xFF,);
             return Err(ectool::Error::Verify);
         }
     }
@@ -495,10 +493,7 @@ unsafe fn flash_legacy(firmware_data: &[u8]) -> core::result::Result<(), ectool:
     unsafe { spi.read(&mut written)? };
     for (addr, byte) in written.iter().enumerate() {
         if *byte != written[addr] {
-            println!(
-                "Failed to write ROM: {:04X} is {:02X} not {:02X}",
-                addr, byte, written[addr],
-            );
+            println!("Failed to write ROM: {:04X} is {:02X} not {:02X}", addr, byte, written[addr],);
             return Err(ectool::Error::Verify);
         }
     }
@@ -546,10 +541,7 @@ unsafe fn flash_read<S: Spi>(
         let next_address = address + sector_size;
         let count = unsafe { spi.read_at(address as u32, &mut rom[address..next_address])? };
         if count != sector_size {
-            println!(
-                "\ncount {} did not match sector size {}",
-                count, sector_size
-            );
+            println!("\ncount {} did not match sector size {}", count, sector_size);
             return Err(ectool::Error::Verify);
         }
         address = next_address;
@@ -655,10 +647,7 @@ unsafe fn flash(
         unsafe { flash_read(&mut spi, &mut rom, sector_size)? };
         for i in 0..rom.len() {
             if rom[i] != new_rom[i] {
-                println!(
-                    "Failed to program: {:X} is {:X} instead of {:X}",
-                    i, rom[i], new_rom[i]
-                );
+                println!("Failed to program: {:X} is {:X} instead of {:X}", i, rom[i], new_rom[i]);
                 return Err(ectool::Error::Verify);
             }
         }
@@ -737,11 +726,19 @@ unsafe fn watchdog_reset(global: bool) {
 
 impl Component for EcComponent {
     fn name(&self) -> &str {
-        if self.master { "EC" } else { "EC2" }
+        if self.master {
+            "EC"
+        } else {
+            "EC2"
+        }
     }
 
     fn path(&self) -> &str {
-        if self.master { ECROM } else { EC2ROM }
+        if self.master {
+            ECROM
+        } else {
+            EC2ROM
+        }
     }
 
     fn model(&self) -> &str {
@@ -771,11 +768,12 @@ impl Component for EcComponent {
         let result = match &self.ec {
             EcKind::Pang(_pmc, _system_version) => {
                 find(FIRMWARENSH)?;
-                let command = if self.master { "ec" } else { "ec2" };
-                let status = shell(&format!(
-                    "{} {} {} flash",
-                    FIRMWARENSH, FIRMWAREDIR, command
-                ))?;
+                let command = if self.master {
+                    "ec"
+                } else {
+                    "ec2"
+                };
+                let status = shell(&format!("{} {} {} flash", FIRMWARENSH, FIRMWAREDIR, command))?;
                 if status == 0 {
                     Ok(())
                 } else {

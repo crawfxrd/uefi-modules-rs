@@ -229,37 +229,21 @@ impl Ui {
         };
 
         // Top left
-        checkbox
-            .roi(0, 0, rect_radius as u32, rect_radius as u32)
-            .draw(display, x - padding_lr, y - padding_tb);
+        checkbox.roi(0, 0, rect_radius as u32, rect_radius as u32).draw(
+            display,
+            x - padding_lr,
+            y - padding_tb,
+        );
 
         // Top right
         checkbox
-            .roi(
-                checkbox.width() - rect_radius as u32,
-                0,
-                rect_radius as u32,
-                rect_radius as u32,
-            )
-            .draw(
-                display,
-                x + w as i32 + padding_lr - rect_radius,
-                y - padding_tb,
-            );
+            .roi(checkbox.width() - rect_radius as u32, 0, rect_radius as u32, rect_radius as u32)
+            .draw(display, x + w as i32 + padding_lr - rect_radius, y - padding_tb);
 
         // Bottom left
         checkbox
-            .roi(
-                0,
-                checkbox.height() - rect_radius as u32,
-                rect_radius as u32,
-                rect_radius as u32,
-            )
-            .draw(
-                display,
-                x - padding_lr,
-                y + h as i32 + padding_tb - rect_radius,
-            );
+            .roi(0, checkbox.height() - rect_radius as u32, rect_radius as u32, rect_radius as u32)
+            .draw(display, x - padding_lr, y + h as i32 + padding_tb - rect_radius);
 
         // Bottom right
         checkbox
@@ -286,14 +270,7 @@ impl Ui {
         highlighted: bool,
     ) {
         if pretty_box {
-            self.draw_pretty_box(
-                display,
-                x,
-                y,
-                rendered.width(),
-                rendered.height(),
-                highlighted,
-            );
+            self.draw_pretty_box(display, x, y, rendered.width(), rendered.height(), highlighted);
         }
         let text_color = if highlighted {
             self.highlight_text_color

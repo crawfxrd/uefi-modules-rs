@@ -51,10 +51,7 @@ static UEFIFLASH: &str = concat!("\\", env!("BASEDIR"), "\\firmware\\uefiflash.e
 static UEFIFLASHTAG: &str = concat!("\\", env!("BASEDIR"), "\\firmware\\uefiflash.tag");
 
 fn shell(cmd: &str) -> Result<usize> {
-    exec_path(
-        SHELLEFI,
-        &["-nointerrupt", "-nomap", "-nostartup", "-noversion", cmd],
-    )
+    exec_path(SHELLEFI, &["-nointerrupt", "-nomap", "-nostartup", "-noversion", cmd])
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -221,139 +218,137 @@ fn inner() -> Result<()> {
 
     let (mut components, mut validations) = components_validations();
 
-    let message = if validations
-        .iter()
-        .any(|v| *v != ValidateKind::Found && *v != ValidateKind::NotFound)
-    {
-        "! Errors were found !"
-    } else if !validations.iter().any(|v| *v == ValidateKind::Found) {
-        "* No updates were found *"
-    } else {
-        let c = if let Ok((_, ectag)) = find(ECTAG) {
-            // Attempt to remove EC tag
-            let status = (ectag.0.Delete)(ectag.0);
-            // XXX: Match previous behavior, which ignored warnings.
-            if !status.is_error() {
-                println!("EC tag: deleted successfully");
+    let message =
+        if validations.iter().any(|v| *v != ValidateKind::Found && *v != ValidateKind::NotFound) {
+            "! Errors were found !"
+        } else if !validations.iter().any(|v| *v == ValidateKind::Found) {
+            "* No updates were found *"
+        } else {
+            let c = if let Ok((_, ectag)) = find(ECTAG) {
+                // Attempt to remove EC tag
+                let status = (ectag.0.Delete)(ectag.0);
+                // XXX: Match previous behavior, which ignored warnings.
+                if !status.is_error() {
+                    println!("EC tag: deleted successfully");
 
-                // Have to prevent Close from being called after Delete
-                mem::forget(ectag);
-            } else {
-                println!("EC tag: failed to delete: {}", status);
-            }
+                    // Have to prevent Close from being called after Delete
+                    mem::forget(ectag);
+                } else {
+                    println!("EC tag: failed to delete: {}", status);
+                }
 
-            // Skip enter if system76 ec flashing already occured
-            components.clear();
-            validations.clear();
-            '\n'
-        } else if find(MESETTAG).is_ok() {
-            // Skip enter if ME unlocked
-            '\n'
-        } else if find(IFLASHVTAG).is_ok() {
-            // Skip enter if flashing a meer5 and flashing already occured
-            components.clear();
-            validations.clear();
-            '\n'
-        } else if find(UEFIFLASH).is_ok() {
-            // Skip enter if flashing a meerkat
-            if find(UEFIFLASHTAG).is_ok() {
+                // Skip enter if system76 ec flashing already occured
                 components.clear();
                 validations.clear();
                 '\n'
-            } else {
+            } else if find(MESETTAG).is_ok() {
+                // Skip enter if ME unlocked
                 '\n'
-            }
-        } else {
-            println!("Press enter to commence flashing, the system may reboot...");
-            let k = raw_key()?;
-            unsafe { char::from_u32_unchecked(u32::from(k.UnicodeChar)) }
-        };
-
-        if c == '\n' || c == '\r' {
-            success = true;
-
-            for c in &components {
-                if c.model() == "meer9" {
-                    // HACK:
-                    // CSME must be disabled or in read-only mode to write
-                    // CSME region of SPI flash. PCH reset does not trigger
-                    // CSME reset, so ME_OVERRIDE will not be in effect on
-                    // cold reset. HECI reset can't be requested after End
-                    // Of Post (before payload runs), so disable CSME as a
-                    // workaround.
-                    let mut cmos_options = cmos::CmosOptionTable::new();
-                    // XXX: Probably better to check for HECI device.
-                    if cmos_options.me_state() {
-                        println!("Disabling CSME for writing SPI flash");
-                        unsafe {
-                            cmos_options.set_me_state(false);
-                        }
-
-                        println!("System will reboot in 5 seconds");
-                        let _ = (std::system_table().BootServices.Stall)(5_000_000);
-
-                        (std::system_table().RuntimeServices.ResetSystem)(
-                            ResetType::Cold,
-                            Status(0),
-                            0,
-                            ptr::null(),
-                        );
-                    }
+            } else if find(IFLASHVTAG).is_ok() {
+                // Skip enter if flashing a meer5 and flashing already occured
+                components.clear();
+                validations.clear();
+                '\n'
+            } else if find(UEFIFLASH).is_ok() {
+                // Skip enter if flashing a meerkat
+                if find(UEFIFLASHTAG).is_ok() {
+                    components.clear();
+                    validations.clear();
+                    '\n'
+                } else {
+                    '\n'
                 }
-            }
-
-            {
-                let ec_kind = unsafe { EcKind::new(true) };
-                // If EC tag does not exist, unlock the firmware
-                if find(ECTAG).is_err() {
-                    match ec_kind {
-                        // Make sure EC is unlocked if running System76 EC
-                        EcKind::System76(_, _) => match unsafe { ec::security_unlock() } {
-                            Ok(()) => (),
-                            Err(err) => {
-                                println!("Failed to unlock firmware: {:?}", err);
-                                return Err(Status::DEVICE_ERROR);
-                            }
-                        },
-                        // Assume EC is unlocked if not running System76 EC
-                        _ => (),
-                    }
-                }
-            }
-
-            for (component, validation) in components.iter().zip(validations.iter()) {
-                if *validation == ValidateKind::Found {
-                    // Only reboot if components are flashed
-                    reboot = true;
-                    match component.flash() {
-                        Ok(()) => {
-                            println!("{}: Success", component.name());
-                        }
-                        Err(err) => {
-                            println!("{}: Failure: {:?}", component.name(), err);
-                            success = false;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if success {
-                if find(IFLASHV).is_ok() {
-                    // Do not reset DMI on meer5
-                } else if let Err(err) = reset_dmi() {
-                    println!("Failed to reset DMI: {:?}", err);
-                }
-
-                reboot = true;
-                "* All updates applied successfully *"
             } else {
-                "! Failed to apply updates !"
+                println!("Press enter to commence flashing, the system may reboot...");
+                let k = raw_key()?;
+                unsafe { char::from_u32_unchecked(u32::from(k.UnicodeChar)) }
+            };
+
+            if c == '\n' || c == '\r' {
+                success = true;
+
+                for c in &components {
+                    if c.model() == "meer9" {
+                        // HACK:
+                        // CSME must be disabled or in read-only mode to write
+                        // CSME region of SPI flash. PCH reset does not trigger
+                        // CSME reset, so ME_OVERRIDE will not be in effect on
+                        // cold reset. HECI reset can't be requested after End
+                        // Of Post (before payload runs), so disable CSME as a
+                        // workaround.
+                        let mut cmos_options = cmos::CmosOptionTable::new();
+                        // XXX: Probably better to check for HECI device.
+                        if cmos_options.me_state() {
+                            println!("Disabling CSME for writing SPI flash");
+                            unsafe {
+                                cmos_options.set_me_state(false);
+                            }
+
+                            println!("System will reboot in 5 seconds");
+                            let _ = (std::system_table().BootServices.Stall)(5_000_000);
+
+                            (std::system_table().RuntimeServices.ResetSystem)(
+                                ResetType::Cold,
+                                Status(0),
+                                0,
+                                ptr::null(),
+                            );
+                        }
+                    }
+                }
+
+                {
+                    let ec_kind = unsafe { EcKind::new(true) };
+                    // If EC tag does not exist, unlock the firmware
+                    if find(ECTAG).is_err() {
+                        match ec_kind {
+                            // Make sure EC is unlocked if running System76 EC
+                            EcKind::System76(_, _) => match unsafe { ec::security_unlock() } {
+                                Ok(()) => (),
+                                Err(err) => {
+                                    println!("Failed to unlock firmware: {:?}", err);
+                                    return Err(Status::DEVICE_ERROR);
+                                }
+                            },
+                            // Assume EC is unlocked if not running System76 EC
+                            _ => (),
+                        }
+                    }
+                }
+
+                for (component, validation) in components.iter().zip(validations.iter()) {
+                    if *validation == ValidateKind::Found {
+                        // Only reboot if components are flashed
+                        reboot = true;
+                        match component.flash() {
+                            Ok(()) => {
+                                println!("{}: Success", component.name());
+                            }
+                            Err(err) => {
+                                println!("{}: Failure: {:?}", component.name(), err);
+                                success = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if success {
+                    if find(IFLASHV).is_ok() {
+                        // Do not reset DMI on meer5
+                    } else if let Err(err) = reset_dmi() {
+                        println!("Failed to reset DMI: {:?}", err);
+                    }
+
+                    reboot = true;
+                    "* All updates applied successfully *"
+                } else {
+                    "! Failed to apply updates !"
+                }
+            } else {
+                "! Not applying updates !"
             }
-        } else {
-            "! Not applying updates !"
-        }
-    };
+        };
 
     remove_override(option)?;
 
@@ -405,12 +400,7 @@ pub fn main() -> Result<()> {
         for i in 0..output.0.Mode.MaxMode {
             let mut mode_ptr = ::core::ptr::null_mut();
             let mut mode_size = 0;
-            Result::from((output.0.QueryMode)(
-                output.0,
-                i,
-                &mut mode_size,
-                &mut mode_ptr,
-            ))?;
+            Result::from((output.0.QueryMode)(output.0, i, &mut mode_size, &mut mode_ptr))?;
 
             let mode = unsafe { &mut *mode_ptr };
             let w = mode.HorizontalResolution;
@@ -500,13 +490,7 @@ pub fn main() -> Result<()> {
         let off_x = (display.width() as i32 - cols as i32 * 8) / 2;
         let off_y = 16 + splash.height() as i32 + 16;
         let rows = (display.height() as i32 - 64 - off_y - 1) as usize / 16;
-        display.rect(
-            off_x,
-            off_y,
-            cols as u32 * 8,
-            rows as u32 * 16,
-            Color::rgb(0, 0, 0),
-        );
+        display.rect(off_x, off_y, cols as u32 * 8, rows as u32 * 16, Color::rgb(0, 0, 0));
         display.sync();
 
         let mut text = TextDisplay::new(display);

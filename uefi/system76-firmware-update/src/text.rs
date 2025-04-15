@@ -126,10 +126,7 @@ impl<'a> TextDisplay<'a> {
     }
 
     pub fn pos(&self) -> (i32, i32) {
-        (
-            self.mode.CursorColumn * 8 + self.off_x,
-            self.mode.CursorRow * 16 + self.off_y,
-        )
+        (self.mode.CursorColumn * 8 + self.off_x, self.mode.CursorRow * 16 + self.off_y)
     }
 
     pub fn clear(&mut self) {

@@ -69,11 +69,7 @@ impl Display {
                 let data_ptr = self.data.as_mut_ptr().cast::<u32>();
 
                 // Move data up
-                core::ptr::copy(
-                    data_ptr.add(off1).cast::<u8>(),
-                    data_ptr.cast::<u8>(),
-                    off2 * 4,
-                );
+                core::ptr::copy(data_ptr.add(off1).cast::<u8>(), data_ptr.cast::<u8>(), off2 * 4);
 
                 // Fill unused region
                 core::slice::from_raw_parts_mut(data_ptr.add(off2), off1).fill(color.data);
@@ -117,9 +113,16 @@ pub struct ScaledDisplay<'a> {
 
 impl<'a> ScaledDisplay<'a> {
     pub fn new(display: &'a mut Display) -> Self {
-        let scale = if display.height() > 1440 { 2 } else { 1 };
+        let scale = if display.height() > 1440 {
+            2
+        } else {
+            1
+        };
 
-        Self { display, scale }
+        Self {
+            display,
+            scale,
+        }
     }
 
     pub fn scale(&self) -> u32 {
@@ -133,8 +136,7 @@ impl<'a> ScaledDisplay<'a> {
 
     pub fn blit(&mut self, x: i32, y: i32, w: u32, h: u32) -> bool {
         let scale = self.scale;
-        self.display
-            .blit(x * scale as i32, y * scale as i32, w * scale, h * scale)
+        self.display.blit(x * scale as i32, y * scale as i32, w * scale, h * scale)
     }
 }
 
@@ -165,13 +167,7 @@ impl Renderer for ScaledDisplay<'_> {
 
     fn rect(&mut self, x: i32, y: i32, w: u32, h: u32, color: Color) {
         let scale = self.scale;
-        self.display.rect(
-            x * scale as i32,
-            y * scale as i32,
-            w * scale,
-            h * scale,
-            color,
-        );
+        self.display.rect(x * scale as i32, y * scale as i32, w * scale, h * scale, color);
     }
 
     fn set(&mut self, color: Color) {

@@ -308,9 +308,7 @@ impl Component for BiosComponent {
                 let mut print_mb = !0; // Invalid number to force first print
                 while data.len() < len {
                     let mut buf = [0; 4096];
-                    let read = spi
-                        .read(data.len(), &mut buf)
-                        .map_err(|_| Status::DEVICE_ERROR)?;
+                    let read = spi.read(data.len(), &mut buf).map_err(|_| Status::DEVICE_ERROR)?;
                     data.extend_from_slice(&buf[..read]);
 
                     // Print output once per megabyte
@@ -391,9 +389,7 @@ impl Component for BiosComponent {
                             new_offset,
                             new_size / 1024
                         );
-                        let slice = data
-                            .get(offset..offset + size)
-                            .ok_or(Status::DEVICE_ERROR)?;
+                        let slice = data.get(offset..offset + size).ok_or(Status::DEVICE_ERROR)?;
 
                         if slice.len() == new_slice.len() {
                             new_slice.copy_from_slice(slice);
@@ -414,10 +410,7 @@ impl Component for BiosComponent {
                         );
                     }
                 } else if areas.contains_key(area_name) {
-                    println!(
-                        "{}: found in old firmware, but not found in new firmware",
-                        area_name
-                    );
+                    println!("{}: found in old firmware, but not found in new firmware", area_name);
                 }
             }
 
