@@ -20,11 +20,7 @@ redox_hwio.workspace = true
 redox_intelflash.workspace = true
 redox_uefi_std.workspace = true
 system76_ecflash.workspace = true
-
-[dependencies.system76_ectool]
-git = "https://github.com/system76/ec.git"
-default-features = false
-features = ["redox_hwio"]
+system76_ectool = { workspace = true, features = ["redox_hwio"] }
 
 [build-dependencies]
 build-cfg.workspace = true
