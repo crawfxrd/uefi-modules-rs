@@ -399,7 +399,7 @@ fn form_display_inner(form: &Form, user_input: &mut UserInput) -> Result<()> {
     'render: loop {
         let mut hotkey_helps = Vec::new();
         for hotkey in form.HotKeyListHead.iter() {
-            let hotkey_help = ffi::nstr(hotkey.HelpString);
+            let hotkey_help = unsafe { ffi::nstr(hotkey.HelpString) };
             hotkey_helps.push(hotkey_help);
         }
 
