@@ -35,14 +35,10 @@ system76_ectool = { git = "https://github.com/system76/ec.git", default-features
 
 [profile.dev]
 opt-level = 1
-panic = "abort"
 
 [profile.release]
 debug = true
 lto = true
-opt-level = 3
-panic = "abort"
-split-debuginfo = "packed"
 #trim-paths = "all" # https://rust-lang.github.io/rfcs/3127-trim-paths.html
 
 [workspace.lints.rust]
