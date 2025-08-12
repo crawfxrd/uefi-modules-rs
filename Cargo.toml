@@ -1,0 +1,49 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# SPDX-FileCopyrightText: 2025 System76, Inc.
+
+[workspace]
+resolver = "3"
+members = [
+    "tools/build-cfg",
+    "uefi/system76-firmware-setup",
+    "uefi/system76-firmware-update",
+    "uefi/system76-gop-policy",
+]
+
+[workspace.package]
+edition = "2024"
+license = "GPL-3.0-only"
+publish = false
+rust-version = "1.85.0"
+
+[workspace.dependencies]
+build-cfg = { path = "tools/build-cfg" }
+# External crates
+coreboot-fs = "0.1.1"
+intel-spi = "0.1.7"
+memoffset = "0.9"
+orbclient = { version = "0.3.46", default-features = false }
+orbfont = { version = "0.1.12", default-features = false }
+plain = "0.2.3"
+redox_dmi = "0.1.6"
+redox_hwio = { version = "0.1.6", default-features = false }
+redox_intelflash = "0.1.3"
+redox_uefi_std = "0.1.14"
+system76_ecflash = "0.1.3"
+system76_ectool = { git = "https://github.com/system76/ec.git", default-features = false }
+
+[profile.dev]
+opt-level = 1
+
+[profile.release]
+debug = true
+lto = true
+#trim-paths = "all" # https://rust-lang.github.io/rfcs/3127-trim-paths.html
+
+[workspace.lints.rust]
+unsafe_op_in_unsafe_fn = "deny"
+
+[workspace.lints.clippy]
+borrow_as_ptr = "warn"
+cast_lossless = "warn"
+ptr_as_ptr = "warn"

@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# SPDX-FileCopyrightText: 2025 System76, Inc.
+
+[Defines]
+  INF_VERSION                    = 1.5
+  BASE_NAME                      = system76-gop-policy
+  FILE_GUID                      = 769a745f-ecb0-492e-aa57-d1d5123f0e16
+  MODULE_TYPE                    = UEFI_DRIVER
+  VERSION_STRING                 = 1.0
+
+[Binaries.X64]
+  PE32|target/x86_64-unknown-uefi/release/system76-gop-policy.efi|*

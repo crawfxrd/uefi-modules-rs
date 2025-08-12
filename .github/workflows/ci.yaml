@@ -1,0 +1,31 @@
+# SPDX-License-Identifier: CC0-1.0
+# SPDX-FileCopyrightText: NONE
+
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    - run: rustup show active-toolchain || rustup toolchain install
+    - run: cargo fetch --locked
+    - run: cargo fmt --check
+    - run: cargo clippy --target x86_64-unknown-uefi -- -D warnings
+    - name: REUSE compliance check
+      uses: fsfe/reuse-action@v5
+
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v4
+    - run: rustup show active-toolchain || rustup toolchain install
+    - run: cargo fetch --locked
+    - run: cargo build --release --target x86_64-unknown-uefi

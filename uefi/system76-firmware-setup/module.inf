@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# SPDX-FileCopyrightText: 2025 System76, Inc.
+
+[Defines]
+  INF_VERSION                    = 1.5
+  BASE_NAME                      = system76-firmware-setup
+  FILE_GUID                      = 76ff62c9-7915-4e98-b964-154524023fa7
+  MODULE_TYPE                    = UEFI_DRIVER
+  VERSION_STRING                 = 1.0
+
+[Binaries.X64]
+  PE32|target/x86_64-unknown-uefi/release/system76-firmware-setup.efi|*
