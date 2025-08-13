@@ -49,8 +49,6 @@ impl ModuleType {
                 println!("cargo::rustc-link-arg=/stack:0,0");
                 println!("cargo::rustc-link-arg=/dll");
                 println!("cargo::rustc-link-arg=/base:0");
-                println!("cargo::rustc-link-arg=/align:32");
-                println!("cargo::rustc-link-arg=/filealign:32");
             }
         }
 
