@@ -6,8 +6,6 @@
 #![allow(non_snake_case)]
 
 #[macro_use]
-extern crate memoffset;
-#[macro_use]
 extern crate uefi_std as std;
 
 use std::prelude::*;

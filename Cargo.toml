@@ -21,7 +21,6 @@ build-cfg = { path = "tools/build-cfg" }
 # External crates
 coreboot-fs = "0.1.1"
 intel-spi = "0.1.7"
-memoffset = "0.9"
 orbclient = { version = "0.3.46", default-features = false }
 orbfont = { version = "0.1.12", default-features = false }
 plain = "0.2.3"
