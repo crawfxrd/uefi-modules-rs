@@ -43,7 +43,7 @@ impl Timeout for UefiTimeout {
     }
 }
 
-fn confirm(display: &mut Display) -> Result<()> {
+pub(crate) fn confirm(display: &mut Display) -> Result<()> {
     let (display_w, display_h) = (display.width(), display.height());
 
     let scale: i32 = if display_h > 1440 {
@@ -55,8 +55,8 @@ fn confirm(display: &mut Display) -> Result<()> {
     };
 
     // Style {
-    let margin_lr = 16 * scale;
-    let margin_tb = 8 * scale;
+    let margin_lr = 12 * scale;
+    let margin_tb = 4 * scale;
 
     let form_width = cmp::min(640 * scale as u32, display_w - margin_lr as u32 * 2);
     let form_x = (display_w as i32 - form_width as i32) / 2;
@@ -195,6 +195,7 @@ fn confirm(display: &mut Display) -> Result<()> {
             }
             Key::Character(c) => match c {
                 '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => {
+                    #[allow(clippy::collapsible_match)]
                     if input.len() < code.len() {
                         input.push(c);
                     }
@@ -218,7 +219,9 @@ fn confirm(display: &mut Display) -> Result<()> {
             Key::Escape => {
                 input.clear();
             }
-            Key::Down => {
+            Key::Down =>
+            {
+                #[allow(clippy::collapsible_match)]
                 if button_i + 1 < buttons.len() {
                     button_i += 1;
                 }

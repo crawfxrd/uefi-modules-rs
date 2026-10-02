@@ -8,17 +8,13 @@ description = "System76 firmware UI"
 edition.workspace = true
 license.workspace = true
 publish.workspace = true
-rust-version.workspace = true
 
 [dependencies]
+bitflags.workspace = true
 orbclient.workspace = true
 orbfont = { workspace = true, features = ["no-std"] }
 redox_uefi_std.workspace = true
-
-[dependencies.system76_ectool]
-git = "https://github.com/system76/ec.git"
-default-features = false
-features = ["redox_hwio"]
+system76_ectool = { workspace = true, features = ["redox_hwio"] }
 
 [build-dependencies]
 build-cfg.workspace = true

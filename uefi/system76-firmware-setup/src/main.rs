@@ -27,8 +27,8 @@ pub extern "C" fn main() -> Status {
 
     let _ = (uefi.BootServices.SetWatchdogTimer)(0, 0, 0, ptr::null());
 
-    if let Err(err) = fde::Fde::install() {
-        println!("Fde error: {:?}", err);
+    if let Err(err) = fde::custom::install() {
+        println!("FDE error: {:?}", err);
         let _ = key::key(true);
     }
 
@@ -37,5 +37,5 @@ pub extern "C" fn main() -> Status {
         let _ = key::key(true);
     }
 
-    Status(0)
+    Status::SUCCESS
 }

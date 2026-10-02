@@ -9,8 +9,7 @@ use orbclient::{Color, Renderer};
 use std::prelude::*;
 use std::proto::Protocol;
 use std::uefi::boot::InterfaceType;
-use std::uefi::text::TextOutput;
-use std::uefi::text::TextOutputMode;
+use std::uefi::text::{TextOutput, TextOutputMode};
 
 use crate::display::{Display, Output, ScaledDisplay};
 

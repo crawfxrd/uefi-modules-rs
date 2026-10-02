@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // SPDX-FileCopyrightText: 2025 System76, Inc.
 
+pub mod font;
+pub mod string;
+
 use std::prelude::*;
 use std::proto::Protocol;
 use std::uefi::hii::database::HiiDatabase;

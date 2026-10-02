@@ -29,6 +29,7 @@ mod bios;
 mod cmos;
 mod component;
 mod ec;
+mod intel_pmc;
 mod mapper;
 mod pci;
 mod sideband;
@@ -151,7 +152,7 @@ fn reset_dmi() -> Result<()> {
         Result::from((uefi.RuntimeServices.GetVariable)(
             wname.as_ptr(),
             &guid,
-            &mut attributes,
+            &raw mut attributes,
             &mut data_size,
             data.as_mut_ptr(),
         ))?;
@@ -221,7 +222,7 @@ fn inner() -> Result<()> {
     let message =
         if validations.iter().any(|v| *v != ValidateKind::Found && *v != ValidateKind::NotFound) {
             "! Errors were found !"
-        } else if !validations.iter().any(|v| *v == ValidateKind::Found) {
+        } else if !validations.contains(&ValidateKind::Found) {
             "* No updates were found *"
         } else {
             let c = if let Ok((_, ectag)) = find(ECTAG) {

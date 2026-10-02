@@ -56,7 +56,7 @@ pub enum EcKind {
 
 impl EcKind {
     pub unsafe fn new(primary: bool) -> Self {
-        // Special case for pang12, pang13, pang14, and pang15
+        // Special case for pang12, pang13, pang14, pang15, and panp16
         {
             let mut system_version = String::new();
 
@@ -80,6 +80,7 @@ impl EcKind {
                 || system_version == "pang13"
                 || system_version == "pang14"
                 || system_version == "pang15"
+                || system_version == "panp16"
             {
                 return EcKind::Pang(
                     unsafe { ectool::Pmc::new(0x62, UefiTimeout::new(100_000)) },
@@ -227,7 +228,7 @@ impl EcComponent {
     }
 
     pub fn validate_data(&self, data: Vec<u8>) -> bool {
-        // Special case for pang12, pang13, pang14, and pang15
+        // Special case for pang12, pang13, pang14, pang15, and panp16
         match &self.ec {
             EcKind::Pang(_pmc, _system_version) => {
                 // XXX: Get flash size programatically?
@@ -251,6 +252,17 @@ impl EcComponent {
                         "system76/lemp13-b".to_string()
                     }
                 }
+                "L2x0JU" => {
+                    // BOARD_ID2 (GPP_E14): Low=14", High=16"
+                    unsafe {
+                        let sideband = Sideband::new(0xE000_0000);
+                        if sideband.gpio(0x5A, 0x50) & 2 == 2 {
+                            "system76/lemp14-b".to_string()
+                        } else {
+                            "system76/lemp14".to_string()
+                        }
+                    }
+                }
                 "N130ZU" => "system76/galp3-c".to_string(),
                 "N140CU" => "system76/galp4".to_string(),
                 "N150ZU" => "system76/darp5".to_string(),
@@ -259,7 +271,7 @@ impl EcComponent {
                 "NH5xHX" => "system76/gaze16-3050".to_string(),
                 "NH5_7HPQ" => {
                     // If the builtin ethernet at 00:1f.6 is present, this is a -b variant
-                    if pci_read(0x00, 0x1f, 0x6, 0x00).unwrap() == 0x15fa8086 {
+                    if pci_read(0x00, 0x1f, 0x6, 0x00).unwrap() == 0x15fa_8086 {
                         "system76/gaze16-3060-b".to_string()
                     } else {
                         "system76/gaze16-3060".to_string()
@@ -269,7 +281,7 @@ impl EcComponent {
                 "NPxxPNP" => {
                     // If the builtin ethernet at 00:1f.6 is present, this is a -b variant
                     let pciid = pci_read(0x00, 0x1f, 0x6, 0x00).unwrap();
-                    if pciid == 0x1a1e8086 || pciid == 0x1a1f8086 {
+                    if pciid == 0x1a1e_8086 || pciid == 0x1a1f_8086 {
                         "system76/gaze17-3060-b".to_string()
                     } else {
                         "system76/gaze17-3060".to_string()
@@ -285,7 +297,7 @@ impl EcComponent {
                     // Check SPI device at 1f.5 for Arrow Lake or Meteor Lake
                     match pci_read(0x00, 0x1f, 0x5, 0x00).unwrap() {
                         // 0x7723 is Arrow Lake (darp11)
-                        0x77238086 => {
+                        0x7723_8086 => {
                             // If GPP_E2 is high, this is the 16 inch variant
                             unsafe {
                                 let sideband = Sideband::new(0xE000_0000);
@@ -297,7 +309,7 @@ impl EcComponent {
                             }
                         }
                         // 0x7e23 is Meteor Lake (darp10)
-                        0x7e238086 => {
+                        0x7e23_8086 => {
                             // If GPP_E2 is high, this is the 16 inch variant
                             unsafe {
                                 let sideband = Sideband::new(0xE000_0000);
@@ -332,9 +344,11 @@ impl EcComponent {
                 "PE6xRNx" => "system76/oryp11".to_string(),
                 "PE60SNx" => "system76/oryp12".to_string(),
                 "PDxxSNx" => "system76/serw13".to_string(),
+                "V2xxRNP" => "system76/gaze20".to_string(),
                 "X170SM-G" => "system76/bonw14".to_string(),
                 "X370SNx" => "system76/bonw15".to_string(),
                 "X370SNx1" => "system76/bonw15-b".to_string(),
+                "X58xWNx" => "system76/bonw16".to_string(),
                 _ => model.to_string(),
             }
         };
@@ -411,7 +425,7 @@ impl<T: Timeout> SpiLegacy<T> {
             for i in 0..block_size {
                 let byte = unsafe { self.pmc_read()? };
                 let addr = block * block_size + i;
-                if addr % self.page_size() == 0 {
+                if addr.is_multiple_of(self.page_size()) {
                     print!("\r{}%", (addr * 100) / (blocks * block_size));
                 }
                 if addr < data.len() {
@@ -436,7 +450,7 @@ impl<T: Timeout> SpiLegacy<T> {
             }
             for i in 0..block_size {
                 let addr = block * block_size + i;
-                if addr % self.page_size() == 0 {
+                if addr.is_multiple_of(self.page_size()) {
                     print!("\r{}%", (addr * 100) / (blocks * block_size));
                 }
                 let byte = if addr < data.len() {
@@ -459,7 +473,7 @@ unsafe fn flash_legacy(firmware_data: &[u8]) -> core::result::Result<(), ectool:
 
     // XXX: Get flash size programatically?
     let rom_size = new_rom.len();
-    if rom_size % 1024 != 0 {
+    if !rom_size.is_multiple_of(1024) {
         println!("ROM size of {} is not valid", rom_size);
         return Err(ectool::Error::Verify);
     }
@@ -586,7 +600,7 @@ unsafe fn flash(
 
     // XXX: Get flash size programatically?
     let rom_size = new_rom.len();
-    if rom_size % 1024 != 0 {
+    if !rom_size.is_multiple_of(1024) {
         println!("ROM size of {} is not valid", rom_size);
         return Err(ectool::Error::Verify);
     }

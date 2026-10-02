@@ -14,14 +14,14 @@ members = [
 edition = "2024"
 license = "GPL-3.0-only"
 publish = false
-rust-version = "1.85.0"
 
 [workspace.dependencies]
 build-cfg = { path = "tools/build-cfg" }
 # External crates
+bitflags = "2.13"
 coreboot-fs = "0.1.1"
 intel-spi = "0.1.7"
-orbclient = { version = "0.3.46", default-features = false }
+orbclient = { version = "=0.3.51", default-features = false }
 orbfont = { version = "0.1.12", default-features = false }
 plain = "0.2.3"
 redox_dmi = "0.1.6"
